@@ -16,10 +16,11 @@ Goals of Design:
 -> Storing string legnth to decrease search time. 
     - Skip strings with differenct numbers of character for search/delete
 -> Decode instruction on user side and send integer as message member
--> Append (sentence) - Function 0
--> Delete (W) - Function 1 - Delete Every word matching - Use string.erase
--> Remove (target-sentence) - Function 2 
--> Search (A) - Function 3 
+-> Function 0 is reserved as default for messages sent from Text-Manager
+-> Append (sentence) - Function 1
+-> Delete (W) - Function 2 - Delete Every word matching - Use string.erase
+-> Remove (target-sentence) - Function 3 
+-> Search (A) - Function 4 
 -> Achieve all string operations using <string> library
 -> Track time to complete operation -> send initial time from user
     - Use this to calculate time to complete
