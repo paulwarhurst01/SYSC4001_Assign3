@@ -42,22 +42,22 @@ void main(){
     printf("\tdelete - Delete every occurence of word passes\n");
     printf("\tremove - Remove first occurence of sentence passed\n");
     printf("\tsearch - returns first sentence containing word\n");
-    printf("Example input: Append Hello there.\n");
+    printf("Example input: append Hello there.\n");
 
     while(running){
-        printf("Enter command and parameter: ");
+        printf("\nEnter command and parameter: ");
         fgets(buffer, BUFSIZ, stdin); 
         /* If User of User enters "Append" */
-        msg_size = strlen(buffer) - 7;      // -7 to remove command
-        if( msg_size > 35 ){
+        msg_size = strlen(buffer) - 7 - 1;      // -7 to remove command
+        if( msg_size > 34 ){
                 printf("Your sentence was %d characters long\n", msg_size); // 7 characters reserved for command
                 printf("Please enter a sentence less than 35 char long\n");
             }
 
         else if(strncmp(buffer, "append", 6) == 0) {
             // If user left full stop off
-            if (buffer[msg_size + 5]!= '.'){
-                printf("Final char was '%c', please ensure final character is a period.", buffer[msg_size + 5]);
+            if (buffer[msg_size + 6]!= '.'){
+                printf("Final char was '%c', please ensure final character is a period.", buffer[msg_size + 6]);
             }
             else {
                 snt_msg.operation = 1;
@@ -78,7 +78,7 @@ void main(){
         }
 
         else if(strncmp(buffer, "remove", 6) == 0) {
-            if (buffer[msg_size + 5]!= '.'){
+            if (buffer[msg_size + 8]!= '.'){
                 printf("Final char was '%c', please ensure final character is a period.", buffer[msg_size + 5]);
             }
             // Check no spaces included
@@ -89,14 +89,15 @@ void main(){
         }
 
         else if(strncmp(buffer, "search", 6) == 0) {
+            // Check no spaces included
             if (strchr(buffer + 7, ' ') != 0) {
                 printf("Please ensure there are no spaces included.\n");
             }
-            // Check no spaces included
             else {
                 snt_msg.operation = 4;
                 ready = 1;
-            }         
+            }
+            printf("Found in stored sentence: ");        
         }
 
         /* If User of User enters 'end' */
@@ -114,13 +115,19 @@ void main(){
             // Prepare message to send
             snt_msg.my_msg_type = 1;
             snt_msg.msg_size = msg_size;
-            buffer[msg_size + 6] = '\0';    // Remove "new line" operator, + 6 to include command still in buffer
+            buffer[msg_size + 7] = '\0';    // Remove "new line" operator, + 6 to include command still in buffer
             strcpy(snt_msg.msg_txt, buffer + 7);
-            printf("Message to send: %s\n", snt_msg.msg_txt);
+            //printf("Message to send with size %d: %s\n", snt_msg.msg_size, snt_msg.msg_txt);
             if (msgsnd(snt_msgid, (void *)&snt_msg, 35, 0) == -1){
                 fprintf(stderr, "msgsnd failed\n");
                 exit(EXIT_FAILURE);
             }
+            if(msgrcv(rcv_msgid, (void *)&rcv_msg, BUFSIZ, 
+                msg_to_receive, 0) == -1) {
+                    fprintf(stderr, "msgrcv failed with error %d\n", errno);
+                    exit(EXIT_FAILURE);
+            }
+            printf("%s\n", rcv_msg.msg_txt);
             ready = 0;
         }
 
