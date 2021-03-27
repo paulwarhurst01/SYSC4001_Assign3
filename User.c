@@ -5,8 +5,12 @@
 #include <unistd.h>
 
 #include <sys/msg.h>
+#include <sys/time.h>
+#include <sys/types.h>
 
 #include "message_struct.h"
+
+#define MICRO_SEC_IN_SEC 1000000
 
 void main(){
     int running = 1, ready = 0, stop_running = 0;
@@ -31,71 +35,93 @@ void main(){
         exit(EXIT_FAILURE);
     }
 
-    char subbuff[5];
-    memcpy(subbuff, &buffer[6], 4); // In theory subbuff[4] = '\0'
+   // Operation Instructions 
+    printf("Enter the command you wish to perform, followed by a space and then the associated string.\n");
+    printf("Possible commands: \n");
+    printf("\tappend - Append sentence passed, sentence must end in a period '.'\n");
+    printf("\tdelete - Delete every occurence of word passes\n");
+    printf("\tremove - Remove first occurence of sentence passed\n");
+    printf("\tsearch - returns first sentence containing word\n");
+    printf("Example input: Append Hello there.\n");
 
     while(running){
-        printf("Enter the command you wish to perform: ");
+        printf("Enter command and parameter: ");
         fgets(buffer, BUFSIZ, stdin); 
         /* If User of User enters "Append" */
-        if(strncmp(buffer, "Append", 6) == 0) {
-            printf("Enter the sentence you want to append: ");
-            fgets(buffer, BUFSIZ, stdin);
-            msg_size = strlen(buffer) - 1;      // -1 to remove '/0'
-            if( msg_size > 35 ){
-                printf("Your sentence was %d characters long\n", msg_size);
+        msg_size = strlen(buffer) - 7;      // -7 to remove command
+        if( msg_size > 35 ){
+                printf("Your sentence was %d characters long\n", msg_size); // 7 characters reserved for command
                 printf("Please enter a sentence less than 35 char long\n");
             }
+
+        else if(strncmp(buffer, "append", 6) == 0) {
             // If user left full stop off
-            else if (buffer[msg_size - 1] != '.'){
-                printf("Please try again, your sentence must end in period.\n");
+            if (buffer[msg_size + 5]!= '.'){
+                printf("Final char was '%c', please ensure final character is a period.", buffer[msg_size + 5]);
             }
             else {
-                snt_msg.msg_size = msg_size;
                 snt_msg.operation = 1;
-                strcpy(snt_msg.msg_txt, buffer);
                 ready = 1;
             }
         }
 
         /* If User of User enters "Delete" */
-        if(strncmp(buffer, "Delete", 6) == 0) {
-            printf("Enter the single word you would like deleted: ");
-            fgets(buffer, BUFSIZ, stdin);
-            msg_size = strlen(buffer) - 1;
-            if( msg_size > 35 ){
-                printf("Your sentence was %d characters long\n", msg_size);
-                printf("Please enter a sentence less than 35 char long\n");
-            }
-            else if (strchr(buffer, ' ') != 0) {
+        else if(strncmp(buffer, "delete", 6) == 0) {
+            if (strchr(buffer + 7, ' ') != 0) {
                 printf("Please ensure there are no spaces included.\n");
             }
+            // Check no spaces included
             else {
-                snt_msg.msg_size = msg_size;
                 snt_msg.operation = 2;
-                strcpy(snt_msg.msg_txt, buffer);
+                ready = 1;
+            }         
+        }
+
+        else if(strncmp(buffer, "remove", 6) == 0) {
+            if (buffer[msg_size + 5]!= '.'){
+                printf("Final char was '%c', please ensure final character is a period.", buffer[msg_size + 5]);
+            }
+            // Check no spaces included
+            else {
+                snt_msg.operation = 3;
+                ready = 1;
+            }         
+        }
+
+        else if(strncmp(buffer, "search", 6) == 0) {
+            if (strchr(buffer + 7, ' ') != 0) {
+                printf("Please ensure there are no spaces included.\n");
+            }
+            // Check no spaces included
+            else {
+                snt_msg.operation = 4;
                 ready = 1;
             }         
         }
 
         /* If User of User enters 'end' */
-        if (strncmp(buffer, "end", 3) == 0){
+        else if (strncmp(buffer, "end", 3) == 0){
             snt_msg.operation = 0;
             ready = 1;
             stop_running = 1;
         }
-
-
 
         else {
             printf("Please enter a compatable keyword\n");
         }
 
         if(ready){
+            // Prepare message to send
+            snt_msg.my_msg_type = 1;
+            snt_msg.msg_size = msg_size;
+            buffer[msg_size + 6] = '\0';    // Remove "new line" operator, + 6 to include command still in buffer
+            strcpy(snt_msg.msg_txt, buffer + 7);
+            printf("Message to send: %s\n", snt_msg.msg_txt);
             if (msgsnd(snt_msgid, (void *)&snt_msg, 35, 0) == -1){
                 fprintf(stderr, "msgsnd failed\n");
                 exit(EXIT_FAILURE);
             }
+            ready = 0;
         }
 
         if (stop_running) running = 0;
