@@ -7,7 +7,7 @@ Goals of Design:
 -> Message server that stores one ever increaseing string containing 
    sentences separated by periods.
 -> User program should check length of string input is < 35 characters - Notify user Otherwise
--> Check senence to appended or removed ends in a period.
+-> Check sentence to appended or removed ends in a period.
 -> Send this length as part of message to use by functions in Text-Manager
 -> Decode instruction on user side and send integer as message member
     -> Function 0 is reserved as default to end Text-Manager
@@ -15,6 +15,7 @@ Goals of Design:
     -> Delete (W) - Function 2 - Delete Every word matching - Use memmove in while loop
     -> Remove (target-sentence) - Function 3 - memmove, check for period before
     -> Search (A) - Function 4 - use two while loops to find ending and starting periods
+-> Send message from text-manager to user informing them of operation completetion.
 
 Calculating Average:
 Average will be found from latest 10 runs of operation.
@@ -26,6 +27,8 @@ Create 2D array to hold 'time taken' to execute instruction.
 
 Test Cases: 
 NB: Cases were entered successively
+NB: Some responses included a time take print out, this was not included in final version.
+    It was only included to prove Average was working
 
 Case I: 
     append Hello there.
@@ -55,7 +58,11 @@ Response/Resulting print out:
 Case V:
     remove Hello there.
 Response/Resulting print out:
-    Time taken: 41 microsec
     Sentence Found and deleted.
     Avg time to complete operation: 41 microsec
 
+Case VI: For this case Hello there. was appended 4 times prior to executing command
+    delete Hello
+Response/Resulting print out:
+    Word deleted 4 times.
+    Avg time to complete operation: 55 microsec
