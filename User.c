@@ -47,6 +47,7 @@ void main(){
     while(running){
         printf("\nEnter command and parameter: ");
         fgets(buffer, BUFSIZ, stdin); 
+        //gettimeofday(&start, NULL); 		// Get time of day before fork()
         /* If User of User enters "Append" */
         msg_size = strlen(buffer) - 7 - 1;      // -7 to remove command
         if( msg_size > 34 ){
