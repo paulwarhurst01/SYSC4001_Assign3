@@ -8,19 +8,20 @@
 #include <sys/time.h>
 #include <sys/types.h>
 
-#include "message_struct.h"
+#include "message_struct.h"         
 #include "averaging_functions.h" // Functions for finding average
-
-#define MICRO_SEC_IN_SEC 1000000
 
 void main(){
     int running = 1, ready = 0, stop_running = 0;
     int rcv_msgid, snt_msgid, msg_size; 
-    struct message_struct rcv_msg, snt_msg;  // Received msg struct
+    struct message_struct rcv_msg, snt_msg;     // Received msg struct
     long int msg_to_receive = 0;
-    char buffer[BUFSIZ]; 
+    char buffer[BUFSIZ];                        // Buffer for user input
+    // Structs for finding start and end time
     struct timeval start, end;
-    long int time_array[4][11];                      // First column will hold number of values obtained for operation
+    // 2D array for finding average time of operation
+    long int time_array[4][11]; // First column will hold number of values obtained for operation
+    long int average_time;          
 
     // Create snt message queue for receiving data from User, rcv_msgid for Text-Manager
     snt_msgid = msgget((key_t)1234, 0666 | IPC_CREAT);
@@ -50,7 +51,7 @@ void main(){
     while(running){
         printf("\nEnter command and parameter: ");
         fgets(buffer, BUFSIZ, stdin); 
-        gettimeofday(&start, NULL);
+        gettimeofday(&start, NULL); // Start time for operation
         msg_size = strlen(buffer) - 7 - 1;      // -7 to remove command
         if( msg_size > 34 ){
                 printf("Your sentence was %d characters long\n", msg_size); // 7 characters reserved for command
@@ -108,6 +109,7 @@ void main(){
             snt_msg.operation = 0;
             ready = 1;
             stop_running = 1;
+            printf("Exiting User...\n");
         }
 
         else {
@@ -132,6 +134,7 @@ void main(){
             }
             gettimeofday(&end, NULL);
             add_to_array(time_array, start, end, rcv_msg.operation);
+            avg_time(time_array, rcv_msg.operation);
             printf("%s\n", rcv_msg.msg_txt);
             printf("Avg time to complete operation: %ld microsec", avg_time(time_array, rcv_msg.operation));
             ready = 0;

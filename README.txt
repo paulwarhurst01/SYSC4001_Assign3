@@ -6,26 +6,56 @@
 Goals of Design:
 -> Message server that stores one ever increaseing string containing 
    sentences separated by periods.
--> User should check length of string input is < 35 characters
--> send this length as part of message to avoid repitition
--> Store this length of string in an integer array
--> Limit this array to contain 100 sentences
--> If more than 100 strings, create a new array
--> Storing string length allows indexing of string using string functions
-    - Possible to skip sentences if initial few characters don't match
--> Storing string legnth to decrease search time. 
-    - Skip strings with differenct numbers of character for search/delete
+-> User program should check length of string input is < 35 characters - Notify user Otherwise
+-> Check senence to appended or removed ends in a period.
+-> Send this length as part of message to use by functions in Text-Manager
 -> Decode instruction on user side and send integer as message member
--> Function 0 is reserved as default for messages sent from Text-Manager
--> Append (sentence) - Function 1
--> Delete (W) - Function 2 - Delete Every word matching - Use string.erase
--> Remove (target-sentence) - Function 3 
--> Search (A) - Function 4 
--> Achieve all string operations using <string> library
--> Track time to complete operation -> send initial time from user
-    - Use this to calculate time to complete
--> Store times for each operation in an array, use this to calculate 
-   average time
-    - Array limited to 100 operations before overwriting first (the earliest) 
-      entries
--> Print average time
+    -> Function 0 is reserved as default to end Text-Manager
+    -> Append (sentence) - Function 1 - use strcat()
+    -> Delete (W) - Function 2 - Delete Every word matching - Use memmove in while loop
+    -> Remove (target-sentence) - Function 3 - memmove, check for period before
+    -> Search (A) - Function 4 - use two while loops to find ending and starting periods
+
+Calculating Average:
+Average will be found from latest 10 runs of operation.
+Create 2D array to hold 'time taken' to execute instruction.
+- Time Taken defined as when user presses enter to input command to when a msg response is recieved
+- 4 rows, 1 for each operation
+- 11 Columns, first to hold number of columns filled, rest for time taken values
+- If operation run more than 10 times, loop back and replace oldest value first.
+
+Test Cases: 
+NB: Cases were entered successively
+
+Case I: 
+    append Hello there.
+Response/Resulting print out:
+    Time taken: 109 microsec
+    Sentence appended.
+    Avg time to complete operation: 109 microsec
+
+Case II: 
+    append Please stop this testing.
+Response/Resulting print out:
+    Time taken: 37 microsec
+    Sentence appended.
+    Avg time to complete operation: 73 microsec
+
+Case III: 
+    append This sentence is way longer than the 37 character limit.
+Response/Resulting print out:
+    Your sentence was 56 characters long
+    Please enter a sentence less than 35 char long
+
+Case IV: 
+    append no period included
+Response/Resulting print out:
+    Final char was 'd', please ensure final character is a period.
+
+Case V:
+    remove Hello there.
+Response/Resulting print out:
+    Time taken: 41 microsec
+    Sentence Found and deleted.
+    Avg time to complete operation: 41 microsec
+

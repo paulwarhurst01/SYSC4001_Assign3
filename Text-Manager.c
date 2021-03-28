@@ -18,7 +18,7 @@ void main(){
     int rcv_msgid, snt_msgid;
     struct message_struct rcv_msg, snt_msg;  // Received msg struct
     long int msg_to_receive = 0;
-    int stored_strlen, deleted;                      // Length of stored string
+    int stored_strlen, deleted;             // Length of stored string, number of times word deleted
 
     // Create rcv message queue for receiving data from User, snt_msgid for User
     rcv_msgid = msgget((key_t)1234, 0666 | IPC_CREAT);
@@ -43,8 +43,7 @@ void main(){
                         fprintf(stderr, "msgrcv failed with error %d\n", errno);
                         exit(EXIT_FAILURE);
         }
-
-        printf("Received message: %s\n", rcv_msg.msg_txt); 
+        // Execute appropriate command
         switch(rcv_msg.operation){
             case 0: 
                 printf("Exiting text manager...\n");
@@ -53,7 +52,6 @@ void main(){
             case 1: 
                 // Append a sentence
                 strcat(stored_str, rcv_msg.msg_txt);
-                printf("Stored: %s\n", stored_str);
                 strcpy(snt_msg.msg_txt, "Sentence appended.");
                 snt_msg.operation = 1;
                 break;
@@ -62,10 +60,8 @@ void main(){
                 deleted = 0;
                 stored_strlen = strlen(stored_str);
                 while(str_loc = strstr(stored_str, rcv_msg.msg_txt)){
-                    printf("Substring: %s\n", str_loc);
                     stored_strlen = strlen(stored_str);
                     memmove(str_loc, str_loc + rcv_msg.msg_size, (stored_strlen - rcv_msg.msg_size));
-                    printf("Stored: %s\n", stored_str);
                     deleted++;
                 }
                 char temp[35];
@@ -90,7 +86,6 @@ void main(){
                 else {
                     strcpy(snt_msg.msg_txt, "Sentence not found.");
                 }
-                printf("Stored: %s\n", stored_str);
                 snt_msg.operation = 3;
                 break;
             case 4:
@@ -122,8 +117,9 @@ void main(){
                 break;
         }
         // Notify User of changes
+        printf("Received message: %s\n", stored_str); 
         snt_msg.my_msg_type = 1;
-            if (msgsnd(snt_msgid, (void *)&snt_msg, 35, 0) == -1){
+        if (msgsnd(snt_msgid, (void *)&snt_msg, 35, 0) == -1){
                     fprintf(stderr, "msgsnd failed\n");
                     exit(EXIT_FAILURE);
         }
