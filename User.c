@@ -131,9 +131,9 @@ void main(){
                     exit(EXIT_FAILURE);
             }
             gettimeofday(&end, NULL);
-            add_to_array(time_array, start, end, 1);
+            add_to_array(time_array, start, end, rcv_msg.operation);
             printf("%s\n", rcv_msg.msg_txt);
-            printf("Avg time to complete operation: %ld", avg_time(time_array, rcv_msg.operation));
+            printf("Avg time to complete operation: %ld microsec", avg_time(time_array, rcv_msg.operation));
             ready = 0;
         }
 
