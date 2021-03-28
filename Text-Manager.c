@@ -10,8 +10,6 @@
 
 #include "message_struct.h" // Shared message data struct
 
-#define MICRO_SEC_IN_SEC 1000000
-
 void main(){
     int running = 1;
     // Initiate stored_str with a preiod as a marker to use for search and remove
@@ -45,6 +43,7 @@ void main(){
                         fprintf(stderr, "msgrcv failed with error %d\n", errno);
                         exit(EXIT_FAILURE);
         }
+
         printf("Received message: %s\n", rcv_msg.msg_txt); 
         switch(rcv_msg.operation){
             case 0: 
@@ -56,6 +55,7 @@ void main(){
                 strcat(stored_str, rcv_msg.msg_txt);
                 printf("Stored: %s\n", stored_str);
                 strcpy(snt_msg.msg_txt, "Sentence appended.");
+                snt_msg.operation = 1;
                 break;
             case 2:
                 // Delete a word every time it appears
@@ -71,6 +71,7 @@ void main(){
                 char temp[35];
                 sprintf(temp, "Word deleted %d times.", deleted);
                 strcpy(snt_msg.msg_txt, temp);
+                snt_msg.operation = 2;
                 break;
             case 3:
                 // Remove a message
@@ -83,13 +84,14 @@ void main(){
                 if((str_loc - 1)[0] == '.'){
                     // Ensures sentence is full sentence not just a sub string
                     // Otherwise would essentially be repeat of 'delete' function
-                    memmove(str_loc, str_loc + rcv_msg.msg_size + 1, (stored_strlen - rcv_msg.msg_size) + 1);
+                    memmove(str_loc, str_loc + rcv_msg.msg_size, (stored_strlen - rcv_msg.msg_size));
                     strcpy(snt_msg.msg_txt, "Sentence Found and deleted.");
                 }
                 else {
                     strcpy(snt_msg.msg_txt, "Sentence not found.");
                 }
                 printf("Stored: %s\n", stored_str);
+                snt_msg.operation = 3;
                 break;
             case 4:
                 // search for word and return sentence with word
@@ -114,6 +116,7 @@ void main(){
                     memset(snt_msg.msg_txt, '\0', 35); // Reset sending message
                     strncpy(snt_msg.msg_txt, str_loc, str_end + 1);
                 }
+                snt_msg.operation = 4;
                 break;
             default:
                 break;

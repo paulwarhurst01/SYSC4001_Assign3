@@ -3,5 +3,4 @@ struct message_struct {
     int operation;
     int msg_size; // number of characters in the msg
     char msg_txt[BUFSIZ];
-    struct timeval time;
 };

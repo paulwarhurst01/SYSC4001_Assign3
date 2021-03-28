@@ -9,6 +9,7 @@
 #include <sys/types.h>
 
 #include "message_struct.h"
+#include "averaging_functions.h" // Functions for finding average
 
 #define MICRO_SEC_IN_SEC 1000000
 
@@ -18,6 +19,8 @@ void main(){
     struct message_struct rcv_msg, snt_msg;  // Received msg struct
     long int msg_to_receive = 0;
     char buffer[BUFSIZ]; 
+    struct timeval start, end;
+    long int time_array[4][11];                      // First column will hold number of values obtained for operation
 
     // Create snt message queue for receiving data from User, rcv_msgid for Text-Manager
     snt_msgid = msgget((key_t)1234, 0666 | IPC_CREAT);
@@ -47,8 +50,7 @@ void main(){
     while(running){
         printf("\nEnter command and parameter: ");
         fgets(buffer, BUFSIZ, stdin); 
-        //gettimeofday(&start, NULL); 		// Get time of day before fork()
-        /* If User of User enters "Append" */
+        gettimeofday(&start, NULL);
         msg_size = strlen(buffer) - 7 - 1;      // -7 to remove command
         if( msg_size > 34 ){
                 printf("Your sentence was %d characters long\n", msg_size); // 7 characters reserved for command
@@ -79,8 +81,8 @@ void main(){
         }
 
         else if(strncmp(buffer, "remove", 6) == 0) {
-            if (buffer[msg_size + 8]!= '.'){
-                printf("Final char was '%c', please ensure final character is a period.", buffer[msg_size + 5]);
+            if (buffer[msg_size + 6]!= '.'){
+                printf("Final char was '%c', please ensure final character is a period.", buffer[msg_size + 6]);
             }
             // Check no spaces included
             else {
@@ -128,7 +130,10 @@ void main(){
                     fprintf(stderr, "msgrcv failed with error %d\n", errno);
                     exit(EXIT_FAILURE);
             }
+            gettimeofday(&end, NULL);
+            add_to_array(time_array, start, end, 1);
             printf("%s\n", rcv_msg.msg_txt);
+            printf("Avg time to complete operation: %ld", avg_time(time_array, rcv_msg.operation));
             ready = 0;
         }
 
